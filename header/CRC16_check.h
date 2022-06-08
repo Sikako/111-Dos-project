@@ -1,0 +1,1 @@
+unsigned short check_sum(unsigned short *, unsigned short);

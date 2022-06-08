@@ -16,6 +16,7 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include "../header/packet_struct.h"
+#include "../header/CRC16_check.h"
 
 /* 最多線程數 */
 #define MAXCHILD 128
@@ -28,26 +29,6 @@ static int alive = -1;
 
 char dst_ip[20] = { 0 };
 int dst_port;
-
-/* CRC16校驗 */
-unsigned short check_sum (unsigned short *buffer, unsigned short size){  
-
-	unsigned long cksum = 0;
-	
-	while(size>1){
-		cksum += *buffer++;
-		size  -= sizeof(unsigned short);
-	}
-	
-	if(size){
-		cksum += *(unsigned char *)buffer;
-	}
-	
-	cksum = (cksum >> 16) + (cksum & 0xffff);
-	cksum += (cksum >> 16);		
-	
-	return((unsigned short )(~cksum));
-}
 
 
 void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader){
