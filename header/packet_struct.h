@@ -1,4 +1,4 @@
-struct ip{
+/*struct ip{
 	unsigned char       hl;
 	unsigned char       tos;
 	unsigned short      total_len;
@@ -22,6 +22,7 @@ struct tcphdr{
 	unsigned short      sum;
 	unsigned short      urp;
 };
+*/
 
 struct pseudohdr{
 	unsigned int	    saddr;
