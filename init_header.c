@@ -1,7 +1,7 @@
 #include "header/init_header.h"
 
 
-void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader, char *dst_ip, int dst_port){
+void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader, char *dst_ip, int dst_port, char mode){
 	int len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 	// IP頭部初始化
 	ip_hdr->version = 4;
@@ -21,10 +21,14 @@ void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr 
 	tcp_hdr->th_dport = htons(dst_port);
 	tcp_hdr->th_seq = htonl( rand()%90000000 + 2345 ); 
 	tcp_hdr->th_ack = 0; 
-	tcp_hdr->th_flags = TH_ACK;
 	tcp_hdr->th_win = htons (2048);  
 	tcp_hdr->th_sum = 0;
 	tcp_hdr->th_urp = 0;
+
+	// mode----------------------------------------------
+	if(mode == 'A')	tcp_hdr->th_flags = TH_ACK;
+	else if(mode == 'S')	tcp_hdr->th_flags = TH_SYN;
+	// --------------------------------------------------
 
 	//TCP偽頭部初始化
 	pseudoheader->zero = 0;

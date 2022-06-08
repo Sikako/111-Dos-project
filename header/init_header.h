@@ -8,4 +8,4 @@
 #include "packet_struct.h"
 
 
-void init_header(struct iphdr *, struct tcphdr *,struct pseudohdr *, char *, int);
+void init_header(struct iphdr *, struct tcphdr *,struct pseudohdr *, char *, int, char);

