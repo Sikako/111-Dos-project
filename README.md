@@ -8,9 +8,17 @@
 * 能夠random source IP
 
 ## 工具使用方法
-
-### flood_attack
+### compile
 ```
 $ ./compile.sh
-$ sudo ./syn <IPaddress> <port> <mode>
+```
+
+### tcp_flood_attack
+```
+$ sudo ./tcp_attack <IPaddress> <port> <mode>
+```
+
+### udp_flood_attack
+```
+$ sudo ./udp_attack <IPaddress> <port>
 ```
