@@ -22,3 +22,11 @@ $ sudo ./tcp_attack <IPaddress> <port> <mode>
 ```
 $ sudo ./udp_attack <IPaddress> <port>
 ```
+### smurf_attack
+
+```
+$ gcc smurf.c -o tools/smurf_attack
+$ sudo ./smurf_attack 192.168.200.55 192.168.200.255
+
+The first ip is attacked address, second is the local area network.
+```
