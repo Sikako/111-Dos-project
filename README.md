@@ -9,8 +9,8 @@
 
 ## 工具使用方法
 
-### syn-flood attack
+### flood_attack
 ```
-$ gcc -o syn syn_flood_custom.c -lpthread
-$ sudo ./syn <IPaddress> <port>
+$ ./compile.sh
+$ sudo ./syn <IPaddress> <port> <mode>
 ```
