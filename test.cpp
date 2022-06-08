@@ -15,7 +15,7 @@
 
 
 int main(){
-    char ip[] = {"192.168.200.55"};
+    char ip[16] = {"192.168.200.64"};
     uint32_t ip_b;
     // to binary 
     inet_pton(AF_INET, ip, &ip_b);
@@ -26,10 +26,19 @@ int main(){
 
     // ip_b = ip_b & 0xFFFFFF00;
     // AND to find broadcast address
-    ip_b = (ip_b & 0x00FFFFFF) + 0xFF000000;
+    ip_b = ip_b & 0x00FFFFFF;
+    printf("&: 0x%x\n", ip_b);
+    std::cout << ip_b << "\n";
+    ip_b = htonl(ip_b);
+    printf("htonl: 0x%x\n", ip_b);
+    std::cout << ip_b << "\n";
+    ip_b = ip_b + 0x000000FF;
+    printf("+: 0x%x\n", ip_b);
+    std::cout << ip_b << "\n";
+    ip_b = ntohl(ip_b);
     inet_ntop(AF_INET, &ip_b, ip, sizeof(ip));
 
-    std::cout << ip;
+    std::cout << ip << "\n";
 
     return 0;
 

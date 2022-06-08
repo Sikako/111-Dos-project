@@ -1,17 +1,28 @@
 #include "init_header.h"
 
-void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char protocol){
+void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char *brc_ip, char protocol){
 	// IP頭部初始化
 	int len; 
 
 	if(protocol == 'T'){
 		ip_hdr->protocol = IPPROTO_TCP;
 		len = sizeof(struct iphdr) + sizeof(struct tcphdr);
+		ip_hdr->saddr = 0;
+		ip_hdr->daddr = inet_addr(dst_ip);
 	}	
 	else if(protocol == 'U'){
 		ip_hdr->protocol = IPPROTO_UDP;
 		len = sizeof(struct iphdr) + sizeof(struct udphdr);
+		ip_hdr->saddr = 0;
+		ip_hdr->daddr = inet_addr(dst_ip);
 	}	
+	else if(protocol == 'I'){
+		ip_hdr->protocol = IPPROTO_ICMP;
+		len = sizeof(struct iphdr) + sizeof(struct icmphdr);
+		ip_hdr->saddr = inet_addr(dst_ip); 
+		ip_hdr->daddr = inet_addr(brc_ip);
+	}
+
 	ip_hdr->version = 4;
 	ip_hdr->ihl = 5;
 	ip_hdr->tos = 0;
@@ -20,15 +31,26 @@ void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char protocol){
 	ip_hdr->frag_off = htons(0);
 	ip_hdr->ttl = 255;
 	ip_hdr->check = 0;
-	ip_hdr->saddr = 0;
-	ip_hdr->daddr = inet_addr(dst_ip);
 
 
 }
 
+void icmp_init_header(struct iphdr *ip_hdr, struct icmphdr *icmp_hdr, char *dst_ip, char *brc_ip){
+	ip_init_header(ip_hdr, dst_ip, brc_ip, 'I');
+
+	// icmp header
+	int sequence = 1;
+	icmp_hdr->type = ICMP_ECHO;
+	icmp_hdr->code = 0;
+	icmp_hdr->checksum = 0;
+	icmp_hdr->un.echo.sequence = htons(sequence);
+	icmp_hdr->un.echo.id = (((ip_hdr->saddr) >> 16) ^ ip_hdr->saddr) & 0x00ffff;
+}
+
+
 void tcp_init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader, char *dst_ip, int dst_port, char mode){
 	srand((unsigned) time(NULL));
-	ip_init_header(ip_hdr, dst_ip, 'T');
+	ip_init_header(ip_hdr, dst_ip, (char *) 0, 'T');
 
 	// TCP頭部初始化
 	tcp_hdr->th_sport = htons( rand()%16383 + 49152 );
@@ -55,7 +77,7 @@ void tcp_init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudo
 
 void udp_init_header(struct iphdr *ip_hdr, struct udphdr *udp_hdr, struct pseudohdr *pseudoheader, char *dst_ip, int dst_port){
 	srand((unsigned) time(NULL));
-	ip_init_header(ip_hdr, dst_ip, 'U');
+	ip_init_header(ip_hdr, dst_ip, (char *) 0, 'U');
 
 	udp_hdr->uh_sport = htons( rand()%16383 + 49152 );
 	udp_hdr->uh_dport = htons(dst_port);
