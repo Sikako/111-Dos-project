@@ -1,4 +1,4 @@
-#include "header/CRC16_check.h"
+#include "CRC16_check.h"
 
 
 /* CRC16校驗 */
@@ -16,7 +16,7 @@ unsigned short check_sum (unsigned short *buffer, unsigned short size){
 	}
 	
 	cksum = (cksum >> 16) + (cksum & 0xffff);
-	cksum += (cksum >> 16);		
+	cksum += (cksum >> 16);
 	
 	return((unsigned short )(~cksum));
 }

