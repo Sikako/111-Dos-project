@@ -14,7 +14,7 @@ void tcp_init_header(struct iphdr *, struct tcphdr *,struct pseudohdr *, char *,
 
 void udp_init_header(struct iphdr *, struct udphdr *, struct pseudohdr *, char *, int);
 
-void icmp_init_header(struct iphdr *, struct icmphdr *, char *, char *);
+void icmp_init_header(struct iphdr *, struct icmphdr *, char *, char *, char);
 
-void ip_init_header(struct iphdr *, char *, char);
+void ip_init_header(struct iphdr *, char *, char *, char);
 
