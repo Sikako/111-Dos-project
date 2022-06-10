@@ -1,0 +1,40 @@
+from PyQt5 import QtWidgets, QtGui, QtCore
+import sys
+from ctypes import *
+import ctypes
+from UI import Ui_MainWindow
+
+if "__main__" == __name__:
+  ll = ctypes.cdll.LoadLibrary 
+  lib = ll("./smurf2.so")
+   
+  ds = "192.168.200.55"
+  bc = "192.168.200.255"
+  
+  b_ds = ds.encode('utf-8')
+  b_bc = bc.encode('utf-8')
+  #add_func(ctypes.c_char_p(b_ds),ctypes.c_char_p(b_bc))
+
+class MainWindow_controller(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__() # in python3, super(Class, self).xxx = super().xxx
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.setup_control()
+
+    def setup_control(self):
+        
+        #self.ui.pushButton.setText('Print message!')
+        self.clicked_counter = 0
+        self.ui.pushButton.clicked.connect(self.buttonClicked)
+
+    def buttonClicked(self):
+        lib.smurf(b_ds,b_bc)
+       
+        
+if __name__ == '__main__':
+    
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow_controller()
+    window.show()
+    sys.exit(app.exec_())
