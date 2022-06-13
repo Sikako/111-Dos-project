@@ -1,5 +1,6 @@
-# use flask_app venv
+# use env in ./flask_app 
 # flask run
+# kill $(pidof a.out)
 
 from flask import Flask,request
 import os
