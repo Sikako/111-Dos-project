@@ -4,7 +4,7 @@ import paramiko
 
 
 class Computer():
-    def __init__(self, host, name, password):
+    def __init__(self, host, name='root', password='root'):
         self.host = host
         self.name = name
         self.password = password
