@@ -1,24 +1,46 @@
 # use env in ./flask_app 
 # flask run
 # kill $(pidof a.out)
+# use sudo without password -----------------
+# sudo visudo
+# <USER> <FROM>=<ACTAS> NOPASSWD: <CMDS>
+# sikako ALL=(ALL) NOPASSWD: ALL
+# -------------------------------------------
 
 from flask import Flask,request
 import os
 
+attack = ""
+
 app = Flask(__name__)
-@app.route("/start", methods=["GET"])
+@app.route("/start", methods=["POST"])
 def start_pid():
-    cmd = "sudo ../tools/udp_attack 172.24.19.216 80"
+    global attack
+    attack = request.form["attack"]
+    IP = request.form["IP"]
+    port = request.form["port"]
+
+    if attack == 'tcp_attack':
+        mode = request.form["mode"]
+        cmd = f"sudo ../tools/{attack} {IP} {port} {mode}"
+    elif attack == 'udp_attack':
+        cmd = f"sudo ../tools/{attack} {IP} {port}"
+    elif attack == 'smurf.attack':
+        BcstIP = request.form["BdstIP"]
+        cmd = f"sudo ../tools/{attack} {IP} {BcstIP}"
+
     r = os.system(cmd)
-    return str(r)
+    # return str(r)
 
 @app.route("/stop")
 def close_pid():
-    app = "udp_attack"
-    pid = os.system(f"pidof {app}")
+    global attack
+    print(attack)
+    pid = os.system(f"pidof {attack}")
     cmd = f"sudo kill -9 {pid}"
     r = os.system(cmd)
-    return str(r)
+    rebuild = os.system('python3'+str(os.path.basename(__file__)))
+    # return str(r)
 
 
 
