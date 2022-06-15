@@ -13,7 +13,7 @@
 ## UML
 [UML diagram](https://drive.google.com/file/d/1Wl6fYA4naVCfMY4u6Kba2XZunE7Qp2Mz/view?usp=sharing)
 
-![](https://i.imgur.com/7OS6bR3.png =400x)
+![](https://i.imgur.com/7OS6bR3.png)
 
 `Use Case Diagram`
 
@@ -21,7 +21,7 @@
 
 `Activity Diagram`
 
-![](https://i.imgur.com/FmO4ETZ.png =400x)
+![](https://i.imgur.com/FmO4ETZ.png)
 `Sequence Diagram`
 
 
