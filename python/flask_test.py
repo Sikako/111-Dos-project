@@ -9,6 +9,7 @@
 
 from flask import Flask,request
 import os
+import subprocess
 
 attack = ""
 
@@ -29,18 +30,18 @@ def start_pid():
         BcstIP = request.form["BdstIP"]
         cmd = f"sudo ../tools/{attack} {IP} {BcstIP}"
 
+    os.system("@echo offc")
     r = os.system(cmd)
-    # return str(r)
+    return "start attack"
 
 @app.route("/stop")
 def close_pid():
     global attack
-    print(attack)
     pid = os.system(f"pidof {attack}")
     cmd = f"sudo kill -9 {pid}"
     r = os.system(cmd)
-    rebuild = os.system('python3'+str(os.path.basename(__file__)))
-    # return str(r)
+    # rebuild = os.system('python3'+str(os.path.basename(__file__)))
+    return "stop attack"
 
 
 

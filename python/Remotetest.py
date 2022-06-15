@@ -1,3 +1,7 @@
+# this is a file to test running remote command using 
+# RemoteComman.py.
+
+
 from RemoteCommand import Computer, ssh_run_remote_command
 
 

