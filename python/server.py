@@ -38,7 +38,7 @@ def start_pid():
         port = str(request.form["port"])
         cmd.append(port)
 
-    elif attack == 'smurf.attack':
+    elif attack == 'smurf_attack':
         BcstIP = str(request.form["BdstIP"])
         cmd.append(BcstIP)
 
