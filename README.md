@@ -81,8 +81,8 @@ The first ip is attacked address, second is the local area network.
 
 ---
 ### 安裝套件
-pip install PyQt5
-pip3 install requests2
+* pip install PyQt5
+* pip3 install requests2
 
 ```shell=
 # cd 111-Dos-project/
