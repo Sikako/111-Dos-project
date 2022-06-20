@@ -76,3 +76,14 @@ $ sudo ./smurf_attack 192.168.200.55 192.168.200.255
 
 The first ip is attacked address, second is the local area network.
 ```
+
+## GUI interface使用方法
+
+---
+### 安裝套件
+pip install PyQt5
+pip3 install requests2
+
+```shell=
+# cd 111-Dos-project/
+# python3 interface.py
