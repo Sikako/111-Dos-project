@@ -7,13 +7,26 @@ import requests
 import ipaddress
 
 
+URL_1 = 'http://192.168.200.51:9999/'
+URL_2 = 'http://192.168.200.51:9999/'
+URL_3 = 'http://192.168.200.51:9999/'
+URL_4 = 'http://192.168.200.51:9999/'
+URL_5 = 'http://192.168.200.51:9999/'
+URL_6 = 'http://192.168.200.51:9999/'
+URL_7 = 'http://192.168.200.51:9999/'
+URL_8 = 'http://192.168.200.51:9999/'
+URL_9 = 'http://192.168.200.51:9999/'
+URL_10 = 'http://192.168.200.51:9999/'
+
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__() # in python3, super(Class, self).xxx = super().xxx
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
+    
         #下拉式選單物件、顯示的文字
         self.ui.comboBox.addItems(['1','2','3','4','5','6','7','8','9','10'])
         #控制端
@@ -34,16 +47,16 @@ class MainWindow(QtWidgets.QMainWindow):
     	#下拉式選單對應的主機位址
     	host = self.ui.comboBox.currentText()
     	match host:
-        	case '1':url = 'http://192.168.200.51:9999/'# Botnet URL
-        	case '2':url = 'http://192.168.126.132:9999/'
-        	case '3':url = 'http://192.168.200.53:9999/'
-        	case '4':url = 'http://192.168.200.54:9999/'
-        	case '5':url = 'http://192.168.200.55:9999/'
-        	case '6':url = 'http://192.168.200.56:9999/'
-        	case '7':url = 'http://192.168.200.57:9999/'
-        	case '8':url = 'http://192.168.200.58:9999/'
-        	case '9':url = 'http://192.168.200.59:9999/'
-        	case '10':url = 'http://192.168.200.60:9999/'
+        	case '1':url = URL_1
+        	case '2':url = URL_2
+        	case '3':url = URL_3
+        	case '4':url = URL_4
+        	case '5':url = URL_5
+        	case '6':url = URL_6
+        	case '7':url = URL_7
+        	case '8':url = URL_8
+        	case '9':url = URL_9
+        	case '10':url = URL_10
         
         # 攻擊目標的IP 
     	IP = self.ui.lineEdit.text()
@@ -86,16 +99,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def button_2Clicked(self):
     	host = self.ui.comboBox.currentText()
     	match host:
-        	case '1':url = 'http://192.168.200.51:9999/'# Botnet URL
-        	case '2':url = 'http://192.168.126.132:9999/'
-        	case '3':url = 'http://192.168.200.53:9999/'
-        	case '4':url = 'http://192.168.200.54:9999/'
-        	case '5':url = 'http://192.168.200.55:9999/'
-        	case '6':url = 'http://192.168.200.56:9999/'
-        	case '7':url = 'http://192.168.200.57:9999/'
-        	case '8':url = 'http://192.168.200.58:9999/'
-        	case '9':url = 'http://192.168.200.59:9999/'
-        	case '10':url = 'http://192.168.200.60:9999/'
+        	case '1':url = URL_1
+        	case '2':url = URL_2
+        	case '3':url = URL_3
+        	case '4':url = URL_4
+        	case '5':url = URL_5
+        	case '6':url = URL_6
+        	case '7':url = URL_7
+        	case '8':url = URL_8
+        	case '9':url = URL_9
+        	case '10':url = URL_10
         	
     	
     	stop_url = url + 'stop'
