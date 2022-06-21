@@ -26,7 +26,9 @@
 
 
 ## 環境
-* python 3.5 up
+* server: python 3.5 up
+* client: python 3.10 !!
+
 
 ## 攻擊種類
 * SYN Flood
