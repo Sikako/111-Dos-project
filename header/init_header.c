@@ -34,7 +34,7 @@ void ip_init_header(struct iphdr *ip_hdr, char *dst_ip, char *brc_ip, char proto
 	ip_hdr->tos = 0;
 	ip_hdr->tot_len = htons(len);
 	ip_hdr->id = random() && 0x00ffff;
-	ip_hdr->frag_off = htons(0);
+	ip_hdr->frag_off = htons(0x4000);
 	ip_hdr->ttl = 255;
 	ip_hdr->check = 0;
 
@@ -69,6 +69,7 @@ void tcp_init_header(struct iphdr *ip_hdr, struct tcphdr *tcp_hdr, struct pseudo
 	tcp_hdr->th_win = htons (2048);  
 	tcp_hdr->th_sum = 0;
 	tcp_hdr->th_urp = 0;
+	tcp_hdr->th_off = 5;
 
 	// mode----------------------------------------------
 	if(mode == 'A' || mode == 'a')	tcp_hdr->th_flags = TH_ACK;

