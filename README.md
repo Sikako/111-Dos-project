@@ -83,7 +83,9 @@ The first ip is attacked address, second is the local area network.
 
 ---
 ### 安裝套件
-* pip install PyQt5
+* sudo apt-get install qt5-default
+* sudo apt-get install qttools5-dev-tools
+* sudo pip3 install pyqt5
 * pip3 install requests2
 
 ```shell=
