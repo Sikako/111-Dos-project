@@ -1,6 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
 #define MaxIP 76;
 
-char ip[][16] = {
+char _IPRange[][16] = {
     "192.100.158.0",
     "192.100.159.0",
     "192.100.160.0",
@@ -79,6 +82,9 @@ char ip[][16] = {
     "192.168.254.0"
 };
 
+void getIPRange(char[]);
 
+void printIP(char[]);
 
+int getSAddr();
     
