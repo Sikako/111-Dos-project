@@ -1,14 +1,4 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <string.h>
-#include <netdb.h>
-#include <errno.h>
-#include <pthread.h>
+#include "header/includeall.h"
 #include "header/CRC16_check.h"
 #include "header/init_header.h"
 #include "header/IPs.h"
@@ -24,6 +14,8 @@ static int alive = -1;
 
 char dst_ip[20] = { 0 };
 int dst_port;
+
+
 
 /* mode */
 char mode;
@@ -43,6 +35,10 @@ void* attack(void *addr_info){
 
 	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 
+
+	/* random seed */
+	time_t t;
+	srand((unsigned) time(&t));
 
 	/* 初始化頭部 */
 	tcp_init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
