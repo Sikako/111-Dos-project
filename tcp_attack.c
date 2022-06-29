@@ -32,7 +32,7 @@ char mode;
  * TCP偽頭部僅用於校驗和的计算
  */
 void* attack(void *addr_info){
-        struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
+    struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
 	struct iphdr ip_hdr;			//IP頭部
