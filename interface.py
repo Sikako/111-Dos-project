@@ -62,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # 攻擊目標的Port	
         port = self.ui.lineEdit_2.text()
+        if port == "" : port = "80"
         
         # 攻擊目標的Broadcast address	
         BdstIP = ipaddress.ip_network( IP + "/24" , strict=False).broadcast_address
